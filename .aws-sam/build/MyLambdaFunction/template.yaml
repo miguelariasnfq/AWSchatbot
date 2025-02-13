@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Local testing for Lambda function with Bedrock
+
+Resources:
+  MyLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.13
+      CodeUri: .
+      Environment:
+        Variables:
+          AWS_REGION: eu-central-1
+          MODEL_ID: amazon.titan-text-lite-v1
+      Policies:
+        - BedrockInvokeModelPolicy:
+            ModelId: amazon.titan-text-lite-v1

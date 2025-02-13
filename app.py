@@ -1,7 +1,7 @@
 import json
 import boto3
 import os
-
+#Modificiación para git
 # Inicialización del cliente
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='eu-central-1')
 model_id = 'amazon.titan-text-lite-v1'

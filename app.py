@@ -22,6 +22,19 @@ def load_contacts_from_s3():
     except Exception as e:
         print(f"Error al obtener JSON desde S3: {str(e)}")
         return []
+    
+# Nombre del archivo local
+
+def load_contacts_from_local():
+    '''
+    Lee el archivo JSON desde el sistema de archivos local.
+    '''
+    try:
+        with open(FILE_NAME, "r", encoding="utf-8") as file:
+            return json.load(file)
+    except Exception as e:
+        print(f"Error al leer el JSON local: {str(e)}")
+        return []
 
 def lambda_handler(event, context):
     # Validación de la entrada
@@ -35,7 +48,7 @@ def lambda_handler(event, context):
     user_input = event['body']
 
     #Obtener los datos de s3
-    contacts = load_contacts_from_s3()
+    contacts = load_contacts_from_local()
 
     # Llamada a Bedrock
     prompt = (

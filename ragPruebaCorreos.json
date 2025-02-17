@@ -1,0 +1,34 @@
+[
+    {
+        "nombre": "se@nfq.es",
+        "servicio": "Soporte al Empleado: Dudas sobre políticas laborales, convenio, contrato, vacaciones, retribución, jornada, referral bonus, Tron, App..."
+    },
+    {
+        "nombre": "it@nfq.es",
+        "servicio": "Incidencias técnicas: Mal funcionamiento de software de los equipos, problemas de conectividad, licencias, correos y aplicaciones, pérdida de datos..."
+    },
+    {
+        "nombre": "soportelogistico@nfq.es",
+        "servicio": "Material entregado: ordenador, móvil, libretas, acceso a oficinas..."
+    },
+    {
+        "nombre": "so@nfq.es",
+        "servicio": "Soporte Operativo: Cuentas de proyectos, documentación de empleados para proyectos, facturas, pagos a proveedores, gastos de empleado o imputación de gastos de empleados..."
+    },
+    {
+        "nombre": "prl@nfq.es",
+        "servicio": "Incidencias con el curso de Prevención de Riesgos Laborales y para el envío del certificado."
+    },
+    {
+        "nombre": "recruiting@nfq.es",
+        "servicio": "Referenciar algún perfil como potencial candidato, dudas sobre el referral bonus."
+    },
+    {
+        "nombre": "formacion@nfq.es",
+        "servicio": "Todo lo relacionado con convocatorias, gestión de certificaciones, dudas en general sobre formación, etc."
+    },
+    {
+        "nombre": "viajes@nfq.es",
+        "servicio": "Solicitud de vuelos y hoteles para viajes de empresa a través de MyNFQ. Otro tipo de consultas o incidencias sobre viajes a este buzón."
+    }
+]

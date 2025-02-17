@@ -1,10 +1,27 @@
 import json
 import boto3
-import os
-#Modificiación para git
+
 # Inicialización del cliente
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='eu-central-1')
 model_id = 'amazon.titan-text-lite-v1'
+
+#Conexión s3
+s3 = boto3.client('s3')
+
+BUCKET_NAME = 'pruebas-miguel-aws'
+FILE_NAME = 'ragPruebaCorreos.json'
+
+def load_contacts_from_s3():
+    '''
+    Lee el archivo JSON desde S3 y lo convierte en una lista de contactos.
+    ''' 
+    try:
+        response = s3.get_object(Bucket = BUCKET_NAME, Key = FILE_NAME)
+        data = response['Body'].read().decode('utf-8')
+        return json.loads(data)
+    except Exception as e:
+        print(f"Error al obtener JSON desde S3: {str(e)}")
+        return []
 
 def lambda_handler(event, context):
     # Validación de la entrada
@@ -17,7 +34,17 @@ def lambda_handler(event, context):
     #Entrada del usuario
     user_input = event['body']
 
+    #Obtener los datos de s3
+    contacts = load_contacts_from_s3()
+
     # Llamada a Bedrock
+    prompt = (
+        f'El usuario tiene la siguiente pregunta: {user_input}.\n'
+        'Para poder contestarla necesito que leas y analices el siguiente documento.'
+        'En el documento obtendrás todos los correos y sus respectivos servicios de la empresa.'
+        f"{json.dumps(contacts, indent=2)}\n"
+        'Devuelve solamente el correo más relevante y adecuado para solucionar la pregunta del usuario.'
+    )
     try:
         kwargs = {
             "modelId": model_id,
@@ -25,7 +52,7 @@ def lambda_handler(event, context):
             "accept": "*/*",
             "body": json.dumps(
                 {
-                    "inputText": user_input
+                    "inputText": prompt
                 }
             )
         }
@@ -40,7 +67,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
-            'body': f"Received from Titan Lite: {generated_text}"
+            'body': f"Respuesta generada: {generated_text}"
         }
 
     except Exception as e:

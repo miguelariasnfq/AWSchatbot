@@ -1,6 +1,6 @@
 import json
 import boto3
-from funciones import read_pdf, read_pdf_from_s3, load_contacts_from_local, load_contacts_from_s3
+from funciones import analyze_pdf_with_textract, load_contacts_from_local, load_contacts_from_s3
 
 # Inicialización del cliente
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='eu-central-1')
@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     user_input = event['body']
 
     #Obtener los datos de los contactos
-    contacts = read_pdf(FILE_NAME)
+    contacts = analyze_pdf_with_textract(FILE_NAME)
     '''
     contacts = read_pdf_from_s3(BUCKET_NAME, FILE_NAME)
     contacts = load_contacts_from_local(FILE_NAME)

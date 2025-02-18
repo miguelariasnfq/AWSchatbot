@@ -1,41 +1,15 @@
 import json
 import boto3
+from funciones import read_pdf, load_contacts_from_local, load_contacts_from_s3
+
 
 # Inicialización del cliente
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='eu-central-1')
 model_id = 'amazon.titan-text-lite-v1'
 
-#Conexión s3
-s3 = boto3.client('s3')
-
 BUCKET_NAME = 'pruebas-miguel-aws'
-FILE_NAME = 'ragPruebaCorreos.json'
-
-def load_contacts_from_s3():
-    '''
-    Lee el archivo JSON desde S3 y lo convierte en una lista de contactos.
-    ''' 
-    try:
-        response = s3.get_object(Bucket = BUCKET_NAME, Key = FILE_NAME)
-        data = response['Body'].read().decode('utf-8')
-        return json.loads(data)
-    except Exception as e:
-        print(f"Error al obtener JSON desde S3: {str(e)}")
-        return []
+FILE_NAME = 'correosNFQ.pdf'
     
-# Nombre del archivo local
-
-def load_contacts_from_local():
-    '''
-    Lee el archivo JSON desde el sistema de archivos local.
-    '''
-    try:
-        with open(FILE_NAME, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except Exception as e:
-        print(f"Error al leer el JSON local: {str(e)}")
-        return []
-
 def lambda_handler(event, context):
     # Validación de la entrada
     if 'body' not in event or not event['body']:
@@ -47,44 +21,82 @@ def lambda_handler(event, context):
     #Entrada del usuario
     user_input = event['body']
 
-    #Obtener los datos de s3
-    contacts = load_contacts_from_local()
+    #Obtener los datos de los contactos
+    contacts = read_pdf(FILE_NAME)
+    '''
+    contacts = load_contacts_from_local(FILE_NAME)
+    contacts = load_contacts_from_s3(FILE_NAME)
+    '''
 
     # Llamada a Bedrock
     prompt = (
         f'El usuario tiene la siguiente pregunta: {user_input}.\n'
-        'Para poder contestarla necesito que leas y analices el siguiente documento.'
+        'Para poder contestarla necesito que leas y analices el siguiente documento. '
         'En el documento obtendrás todos los correos y sus respectivos servicios de la empresa.'
-        f"{json.dumps(contacts, indent=2)}\n"
-        'Devuelve solamente el correo más relevante y adecuado para solucionar la pregunta del usuario.'
+        f"\n{(contacts)}\n"
+        'A continuación encontrarás entre "****************" varios ejemplos que debes tomar de referencia para tu proceso de lógica y la forma en la que debes responder.\n'
+        '******************************************************************************************\n'
+        'Pregunta: "¿Cuántos días de vacaciones me quedan este año?"\n'
+        'Respuesta: "se@nfq.es"\n'
+        'Pregunta: "¿A qué correo debo escribir si quiero irme de viaje por trabajo?"\n'
+        'Respuesta: "viajes@nfq.es"\n'
+        'Pregunta: "¿Dónde puedo pedir información sobre un curso de marketing?"\n'
+        'Respuesta: "formacion@nfq.es"\n'
+        'Pregunta: "No puedo acceder a mi correo corporativo, ¿me pueden ayudar?"\n'
+        'Respuesta: "it@nfq.es"\n'
+        'Pregunta: "¿Cuántos días de vacaciones me quedan este año?"\n'
+        'Respuesta: "se@nfq.es"\n'
+        'Pregunta: "Voy a empezar un nuevo proyecto y necesito un portátil, ¿cómo solicito uno?"\n'
+        'Respuesta: "soportelogistico@nfq.es"\n'
+        'Pregunta: "¿Cuándo es la próxima convocatoria para la certificación en AWS?"\n'
+        'Respuesta: "formacion@nfq.es"\n'
+        '******************************************************************************************\n'
+        'Ahora devuelve el correo más relevante y adecuado para solucionar la pregunta del usuario como en los ejemplos. Sin más texto de por medio, únicamente el correo que solucione el problema del usuario.'
     )
-    try:
-        kwargs = {
-            "modelId": model_id,
-            "contentType": "application/json",
-            "accept": "*/*",
-            "body": json.dumps(
-                {
-                    "inputText": prompt
-                }
-            )
-        }
 
-        response = bedrock_runtime.invoke_model(**kwargs)
+    #Comprobamos si el prompt se manda de forma correcta antes de invocar al modelo
+    print(prompt)
+    avance = input('¿Seguir? (y/n):\n')
+    while avance.lower() not in ['y', 'n']:
+        avance = input('¿Seguir? (y/n):\n')
+    if avance.lower() == 'n':
+        return
+    else:
+        try:
+            kwargs = {
+                "modelId": model_id,
+                "contentType": "application/json",
+                "accept": "*/*",
+                "body": json.dumps(
+                    {
+                        "inputText": prompt
+                    }
+                )
+            }
 
-        #Respuesta de Bedrock
-        bedrock_output = json.loads(response['body'].read().decode('utf-8'))
+            response = bedrock_runtime.invoke_model(**kwargs)
 
-        #Texto generado
-        generated_text = bedrock_output['results'][0]['outputText']
+            #Respuesta de Bedrock
+            bedrock_output = json.loads(response['body'].read().decode('utf-8'))
 
-        return {
-            'statusCode': 200,
-            'body': f"Respuesta generada: {generated_text}"
-        }
+            #Texto generado
+            generated_text = bedrock_output['results'][0]['outputText']
 
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': f"Error: {str(e)}"
-        }
+            return {
+                'statusCode': 200,
+                'body': f"Correo al que debe escribir: {generated_text}"
+            }
+
+        except Exception as e:
+            return {
+                'statusCode': 500,
+                'body': f"Error: {str(e)}"
+            }
+    
+# Prueba en local
+if __name__ == "__main__":
+    event = {
+        "body": "Tengo un amigo que quiere entrar a la empresa, ¿a quién envío su curriculum para recomendarle?"
+    }
+    response = lambda_handler(event, None)
+    print(response)

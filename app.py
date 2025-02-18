@@ -1,7 +1,6 @@
 import json
 import boto3
-from funciones import read_pdf, load_contacts_from_local, load_contacts_from_s3
-
+from funciones import read_pdf, read_pdf_from_s3, load_contacts_from_local, load_contacts_from_s3
 
 # Inicialización del cliente
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='eu-central-1')
@@ -24,6 +23,7 @@ def lambda_handler(event, context):
     #Obtener los datos de los contactos
     contacts = read_pdf(FILE_NAME)
     '''
+    contacts = read_pdf_from_s3(BUCKET_NAME, FILE_NAME)
     contacts = load_contacts_from_local(FILE_NAME)
     contacts = load_contacts_from_s3(FILE_NAME)
     '''
@@ -51,7 +51,7 @@ def lambda_handler(event, context):
         'Pregunta: "¿Cuándo es la próxima convocatoria para la certificación en AWS?"\n'
         'Respuesta: "formacion@nfq.es"\n'
         '******************************************************************************************\n'
-        'Ahora devuelve el correo más relevante y adecuado para solucionar la pregunta del usuario como en los ejemplos. Sin más texto de por medio, únicamente el correo que solucione el problema del usuario.'
+        'Ahora devuelve el correo más relevante y adecuado para solucionar la pregunta del usuario como en los ejemplos. Sin más texto ni ningún carácter de por medio, únicamente el correo que solucione el problema del usuario, nada más.'
     )
 
     #Comprobamos si el prompt se manda de forma correcta antes de invocar al modelo
@@ -69,7 +69,11 @@ def lambda_handler(event, context):
                 "accept": "*/*",
                 "body": json.dumps(
                     {
-                        "inputText": prompt
+                        "inputText": prompt,
+                        "textGenerationConfig":{
+                            "temperature":0.1,
+                            "topP":0.9
+                        }
                     }
                 )
             }
@@ -96,7 +100,7 @@ def lambda_handler(event, context):
 # Prueba en local
 if __name__ == "__main__":
     event = {
-        "body": "Tengo un amigo que quiere entrar a la empresa, ¿a quién envío su curriculum para recomendarle?"
+        "body": "A quién solicito información sobre un Master?"
     }
     response = lambda_handler(event, None)
     print(response)

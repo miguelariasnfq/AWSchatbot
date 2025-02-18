@@ -1,7 +1,30 @@
 import fitz  # PyMuPDF
 import json
 import boto3
+from io import BytesIO
 
+def read_pdf_from_s3(bucket_name, file_name):
+    """
+    Lee un archivo PDF desde S3 y devuelve su contenido como una cadena UTF-8.
+    
+    @param bucket_name: Nombre del bucket de S3.
+    @param file_name: Nombre del archivo PDF en el bucket de S3.
+    :return: Contenido del PDF en formato UTF-8.
+    """
+    s3 = boto3.client('s3')
+    try:
+        # Descargar el archivo PDF desde S3
+        response = s3.get_object(Bucket=bucket_name, Key=file_name)
+        pdf_data = response['Body'].read()
+
+        # Abrir el PDF usando fitz (PyMuPDF)
+        doc = fitz.open(stream=BytesIO(pdf_data))
+        text = "\n".join([page.get_text("text") for page in doc])
+        return text
+
+    except Exception as e:
+        return f"Error al leer el PDF desde S3: {e}"
+    
 def read_pdf(pdf_path):
     """
     Lee un archivo PDF y devuelve su contenido como una cadena UTF-8.

@@ -1,7 +1,7 @@
-import fitz  # PyMuPDF
 import json
 import boto3
-from io import BytesIO
+#from io import BytesIO
+#import fitz   PyMuPDF
 
 def load_contacts_from_local(LOCAL_FILE):
     '''

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interfaz Lambda</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h2>Interfaz con AWS Lambda</h2>
+    <form id="lambdaForm">
+        <label for="userInput">Introduce tu mensaje:</label>
+        <input type="text" id="userInput" required placeholder="Escribe tu pregunta aquí...">
+        <button type="submit">Enviar</button>
+    </form>
+    <h3>Respuesta:</h3>
+    <div id="response">Esperando respuesta...</div>
+
+    <script>
+        document.getElementById("lambdaForm").addEventListener("submit", async function(event) {
+            event.preventDefault(); // Evita que el formulario se envíe de forma tradicional
+
+            // Obtén el valor del input del usuario
+            const userInput = document.getElementById("userInput").value;
+            const apiUrl = "https://n0wo1osmz7.execute-api.eu-central-1.amazonaws.com/dev/ask"; 
+
+            // Muestra un mensaje de carga
+            document.getElementById("response").textContent = "Cargando...";
+
+            try {
+                // Realiza la solicitud a la API
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ body: userInput })
+                });
+
+                // Verifica si la respuesta es exitosa
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                // Procesa la respuesta JSON
+                const data = await response.json();
+                document.getElementById("response").textContent = data.body;
+            } catch (error) {
+                // Maneja errores
+                console.error("Error:", error);
+                document.getElementById("response").textContent = "Error al conectar con la API.";
+            }
+        });
+    </script>
+</body>
+</html>

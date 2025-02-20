@@ -1,6 +1,6 @@
 import json
 import boto3
-from funciones import analyze_pdf_with_textract, load_contacts_from_local, load_contacts_from_s3
+from funciones import analyze_pdf_with_textract, analyze_pdf_from_s3_with_textract, load_contacts_from_local, load_contacts_from_s3
 
 # Inicialización del cliente
 bedrock_runtime = boto3.client('bedrock-runtime', region_name='eu-central-1')
@@ -100,7 +100,7 @@ def lambda_handler(event, context):
 # Prueba en local
 if __name__ == "__main__":
     event = {
-        "body": "A quién solicito información sobre un Master?"
+        "body": "Quiero cambiar mi cuenta de banco a la que quiero que me den mi nómina, ¿a quién debería solicitarle el cambio?"
     }
     response = lambda_handler(event, None)
     print(response)

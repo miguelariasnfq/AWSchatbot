@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"> 
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interfaz Lambda</title>
+    <title>Chatbot con AWS Lambda</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h2>Interfaz con AWS Lambda</h2>
-    <form id="lambdaForm">
-        <label for="userInput">Introduce tu mensaje:</label>
-        <input type="text" id="userInput" required placeholder="Escribe tu pregunta aquí...">
-        <button type="submit">Enviar</button>
-    </form>
-    <h3>Respuesta:</h3>
-    <div id="response">Esperando respuesta...</div>
+    <div class="chat-container">
+        <h1>Chatbot de Soporte</h1>
+        <div class="chat-window" id="chatWindow">
+            <div class="message bot">Hola, soy tu asistente virtual. ¿En qué puedo ayudarte?</div>
+        </div>
+        <form id="lambdaForm" class="chat-form">
+            <input type="text" id="userInput" required placeholder="Escribe tu pregunta aquí..." autocomplete="off">
+            <button type="submit">Enviar</button>
+        </form>
+    </div>
 
     <script>
         document.getElementById("lambdaForm").addEventListener("submit", async function(event) {
@@ -22,10 +24,26 @@
 
             // Obtén el valor del input del usuario
             const userInput = document.getElementById("userInput").value;
-            const apiUrl = "https://n0wo1osmz7.execute-api.eu-central-1.amazonaws.com/dev/ask"; 
+            const apiUrl = "https://n0wo1osmz7.execute-api.eu-central-1.amazonaws.com/dev/ask";
+
+            // Limpia el input
+            document.getElementById("userInput").value = "";
+
+            // Muestra el mensaje del usuario en el chat
+            const chatWindow = document.getElementById("chatWindow");
+            const userMessage = document.createElement("div");
+            userMessage.className = "message user";
+            userMessage.textContent = userInput;
+            chatWindow.appendChild(userMessage);
 
             // Muestra un mensaje de carga
-            document.getElementById("response").textContent = "Cargando...";
+            const loadingMessage = document.createElement("div");
+            loadingMessage.className = "message bot";
+            loadingMessage.textContent = "Cargando...";
+            chatWindow.appendChild(loadingMessage);
+
+            // Desplaza el chat hacia abajo
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
             try {
                 // Realiza la solicitud a la API
@@ -42,12 +60,17 @@
 
                 // Procesa la respuesta JSON
                 const data = await response.json();
-                document.getElementById("response").textContent = data.body;
+
+                // Reemplaza el mensaje de carga con la respuesta del bot
+                loadingMessage.textContent = data.body || data.response;
             } catch (error) {
                 // Maneja errores
                 console.error("Error:", error);
-                document.getElementById("response").textContent = "Error al conectar con la API.";
+                loadingMessage.textContent = "Error al conectar con la API.";
             }
+
+            // Desplaza el chat hacia abajo
+            chatWindow.scrollTop = chatWindow.scrollHeight;
         });
     </script>
 </body>
